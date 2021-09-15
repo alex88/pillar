@@ -11,6 +11,10 @@ defmodule Pillar.TypeConvert.ToElixir do
   def convert("String", value) do
     value
   end
+  
+  def convert("Map(" <> _, value) do
+    value
+  end
 
   def convert("LowCardinality" <> type, value) do
     convert(type, value)
