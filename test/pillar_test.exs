@@ -270,6 +270,22 @@ defmodule PillarTest do
                })
     end
 
+    test "Decimal test", %{conn: conn} do
+      create_table_sql = """
+        CREATE TABLE IF NOT EXISTS decimal_table_#{@timestamp} (field Decimal64(2)) ENGINE = Memory
+      """
+
+      insert_query_sql = """
+        INSERT INTO decimal_table_#{@timestamp} VALUES (500000.05)
+      """
+
+      assert {:ok, ""} = Pillar.query(conn, create_table_sql)
+      assert {:ok, ""} = Pillar.query(conn, insert_query_sql)
+
+      assert {:ok, [%{"field" => 500_000.05}]} =
+               Pillar.select(conn, "SELECT * FROM decimal_table_#{@timestamp} LIMIT 1")
+    end
+
     test "Float tests", %{conn: conn} do
       sql = ~s(
         SELECT
@@ -358,6 +374,14 @@ defmodule PillarTest do
               [
                 %{"number" => 0}
               ]}
+  end
+
+  test "IP tests", %{conn: conn} do
+    sql =
+      "SELECT toIPv4('1.1.1.1') as ip4, toIPv6('2001:db8::8a2e:370:7334') as ip6, toIPv4('2.2.2.2') == toIPv4({ip}) as matches"
+
+    assert {:ok, [%{"ip4" => "1.1.1.1", "ip6" => "2001:db8::8a2e:370:7334", "matches" => 1}]} =
+             Pillar.select(conn, sql, %{ip: {2, 2, 2, 2}})
   end
 
   describe "#insert_to_table" do

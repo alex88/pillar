@@ -52,6 +52,8 @@ defmodule Pillar.TypeConvert.ToElixir do
     nil
   end
 
+  def convert("DateTime64(3)", value), do: convert("DateTime", value)
+
   def convert("DateTime", value) do
     {:ok, datetime, _offset} = DateTime.from_iso8601(value <> "Z")
     datetime
@@ -68,6 +70,14 @@ defmodule Pillar.TypeConvert.ToElixir do
 
   def convert("Date", value) do
     Date.from_iso8601!(value)
+  end
+
+  def convert("IPv4", value) do
+    value
+  end
+
+  def convert("IPv6", value) do
+    value
   end
 
   def convert(clickhouse_type, value)
@@ -95,6 +105,10 @@ defmodule Pillar.TypeConvert.ToElixir do
              "Float32",
              "Float64"
            ] and is_number(value) do
+    value
+  end
+
+  def convert("Decimal" <> _decimal_subtypes, value) do
     value
   end
 end
