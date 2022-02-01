@@ -17,6 +17,7 @@ Online Analytical Processing (OLAP) database management system.
   - [Async insert](#async-insert)
   - [Buffer for periodical bulk inserts](#buffer-for-periodical-bulk-inserts)
   - [Migrations](#migrations)
+  - [DateTime Timezones](#timezones)
 
 ## Usage
 
@@ -140,6 +141,16 @@ And launch this via command.
 ```bash
 mix migrate_clickhouse
 ```
+
+### Timezones
+
+In order to be able to use Timezones add timezones database to your project and configure your app:
+
+```elixir
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+```
+
+Details here https://hexdocs.pm/elixir/1.12/DateTime.html#module-time-zone-database
 
 # Contribution
 

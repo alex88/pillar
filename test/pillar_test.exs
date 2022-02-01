@@ -6,6 +6,8 @@ defmodule PillarTest do
   @timestamp DateTime.to_unix(DateTime.utc_now())
 
   setup do
+    Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)
+
     connection_url = Application.get_env(:pillar, :connection_url)
     connection = Connection.new(connection_url)
 
@@ -32,6 +34,13 @@ defmodule PillarTest do
     test "#query - timeout tests" do
       {:error, %Pillar.HttpClient.TransportError{reason: reason}} =
         PillarWorker.query("SELECT sleep(1)", %{}, %{timeout: 0})
+
+      assert inspect(reason) =~ ~r/timeout/
+    end
+
+    test "#query - timeout tests with 3s" do
+      {:error, %Pillar.HttpClient.TransportError{reason: reason}} =
+        PillarWorker.query("SELECT sleep(3)", %{}, %{timeout: 3_000})
 
       assert inspect(reason) =~ ~r/timeout/
     end
@@ -268,6 +277,20 @@ defmodule PillarTest do
                Pillar.query(conn, "INSERT INTO #{table_name} SELECT {date}", %{
                  date: DateTime.utc_now()
                })
+    end
+
+    test "DateTime with Timezone", %{conn: conn} do
+      sql =
+        "SELECT toTimeZone(toDateTime('2021-12-20 06:00:00'), 'Europe/Moscow') AS timezone_datetime"
+
+      assert {:ok, [%{"timezone_datetime" => datetime_or_error}]} = Pillar.select(conn, sql)
+      # it's OK to return error for elixir lower 1.11
+      if datetime_or_error == {:error, "feature needs elixir v1.11 minimum"} do
+        assert true
+      else
+        assert DateTime.to_string(datetime_or_error) ==
+                 "2021-12-20 09:00:00+03:00 MSK Europe/Moscow"
+      end
     end
 
     test "Decimal test", %{conn: conn} do
