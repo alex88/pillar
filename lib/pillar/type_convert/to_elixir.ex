@@ -137,6 +137,10 @@ defmodule Pillar.TypeConvert.ToElixir do
   def convert("Decimal" <> _decimal_subtypes, value) do
     value
   end
+  
+  def convert(_, nil) do
+    nil
+  end
 
   defp convert_datetime_with_timezone(value, time_zone) do
     [date, time] = String.split(value, " ")
