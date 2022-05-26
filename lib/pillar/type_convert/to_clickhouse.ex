@@ -1,5 +1,15 @@
 defmodule Pillar.TypeConvert.ToClickhouse do
   @moduledoc false
+  
+  def convert(param) when is_tuple(param) do
+    values = param
+    |> Tuple.to_list()
+    |> Enum.map_join(",", &convert/1)
+
+    "(#{values})"
+  end
+
+  
   def convert(param) when is_list(param) do
     if Keyword.keyword?(param) && !Enum.empty?(param) do
       values =
