@@ -142,6 +142,10 @@ defmodule Pillar.TypeConvert.ToElixir do
     nil
   end
 
+  def convert("Map" <> _key_values_types, pairs) do
+    Keyword.new(pairs, fn {k, v} -> {String.to_atom(k), v} end)
+  end
+
   defp convert_datetime_with_timezone(value, time_zone) do
     [date, time] = String.split(value, " ")
 
