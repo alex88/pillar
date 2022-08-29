@@ -2,7 +2,7 @@ defmodule Pillar.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/balance-platform/pillar"
-  @version "0.28.0"
+  @version "0.30.0"
 
   def project do
     [
@@ -40,7 +40,7 @@ defmodule Pillar.MixProject do
     [
       {:jason, ">= 1.0.0"},
       {:tesla, "~> 1.4.0"},
-      {:mint, "~> 1.0"},
+      {:mint, "~> 1.4"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
       {:tzdata, "~> 1.1", only: [:dev, :test]},

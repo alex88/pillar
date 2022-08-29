@@ -260,6 +260,34 @@ defmodule PillarTest do
                Pillar.query(conn, "SELECT * FROM #{table_name} LIMIT 1 FORMAT JSON")
     end
 
+    test "Date32 test", %{conn: conn} do
+      sql = "SELECT toDate32(now()) AS Date32"
+
+      case Pillar.select(conn, sql) do
+        {:error, %Pillar.HttpClient.Response{body: error}} ->
+          assert error =~ ~r/Unknown function toDate32/
+
+        {:ok, [%{"Date32" => date32_result}]} ->
+          assert %Date{} = date32_result
+
+          table_name = "date32_test_#{@timestamp}"
+
+          create_table_sql = """
+          CREATE TABLE IF NOT EXISTS #{table_name} (field Date32) ENGINE = Memory
+          """
+
+          assert {:ok, ""} = Pillar.query(conn, create_table_sql)
+
+          assert {:ok, ""} =
+                   Pillar.query(conn, "INSERT INTO #{table_name} SELECT {date}", %{
+                     date: Date.utc_today()
+                   })
+
+          assert {:ok, [%{"field" => %Date{}}]} =
+                   Pillar.select(conn, "SELECT * FROM #{table_name} LIMIT 1")
+      end
+    end
+
     test "DateTime test", %{conn: conn} do
       sql = "SELECT now()"
 
@@ -283,7 +311,7 @@ defmodule PillarTest do
 
     test "DateTime with Timezone", %{conn: conn} do
       sql =
-        "SELECT toTimeZone(toDateTime('2021-12-20 06:00:00'), 'Europe/Moscow') AS timezone_datetime"
+        "SELECT toTimeZone(toDateTime('2021-12-20 06:00:00', 'UTC'), 'Europe/Moscow') AS timezone_datetime"
 
       assert {:ok, [%{"timezone_datetime" => datetime_or_error}]} = Pillar.select(conn, sql)
       # it's OK to return error for elixir lower 1.11
